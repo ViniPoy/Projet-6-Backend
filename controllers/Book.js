@@ -26,9 +26,16 @@ exports.createBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
     delete bookObject._userId;
+    const rating = bookObject.rating;
+    const ratings = [{
+        userId: req.auth.userId,
+        grade: rating
+    }]
     const book = new Book({
         ...bookObject,
         userId: req.auth.userId,
+        ratings,
+        averageRating: rating,
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
     book.save()
@@ -57,7 +64,7 @@ exports.modifyBook = (req, res, next) => {
 
 exports.deleteBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
-        .then(() => {
+        .then(book => {
             if (book.userId != req.auth.userId) {
                 res.status(401).json({message: 'Non autorisé'});
             } else {
