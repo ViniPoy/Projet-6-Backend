@@ -18,16 +18,16 @@ exports.getOneBook = (req, res, next) => {
 
 exports.getBestRatedBook = (req, res, next) => {
     Book.find()
-        .sort({ averageRating: -1 })
-        .limit(3)
+        .sort({ averageRating: -1 }) // On trie les livres dans l'ordre décroissant
+        .limit(3) // Et on n'en affiche que 3, donc ici les trois mieux notés
         .then(books => res.status(200).json(books))
         .catch(error => res.status(400).json({ error }));
 };
 
 exports.createBook = (req, res, next) => {
-    const bookObject = JSON.parse(req.body.book);
-    delete bookObject._id;
-    delete bookObject._userId;
+    const bookObject = JSON.parse(req.body.book); // On récupère le contenu json de l'objet livre
+    delete bookObject._id; // Puis on supprime l'id fournit par le json car un nouveau  est fournit par l'api
+    delete bookObject._userId; // Ainsi que le userID sur le même principe
 
     const inputPath = req.file.path; // ex: images/monimage123.jpg
     const filename = req.file.filename.split('.')[0] + '.webp'; // ex monimage123.webp
@@ -41,19 +41,19 @@ exports.createBook = (req, res, next) => {
             fs.unlink(inputPath, (err) => {
                 if (err) console.error('Erreur de suppression fichier original: ', err);
             });
-            const rating = bookObject.rating ?? bookObject.ratings?.[0]?.grade ?? 0;
-            const ratings = bookObject.ratings ?? [{
+            const rating = bookObject.rating ?? bookObject.ratings?.[0]?.grade ?? 0; // S'il y a un champ rating simple, on le prend, sinon on essaie de prendre la première note du tableau 'ratings', si aucune de ces deux notes ne sont défini, on prend 0 par défaut.
+            const ratings = bookObject.ratings ?? [{ // Si le tableau bookObject.rating existe on le garde, sinon on en créé un avec une seule note.
                 userId: req.auth.userId,
                 grade: rating
             }]
-            const book = new Book({
-                ...bookObject,
-                userId: req.auth.userId,
-                ratings,
-                averageRating: rating,
-                imageUrl: `${req.protocol}://${req.get('host')}/images/${filename}`
+            const book = new Book({ // On créé un nouvel objet livre
+                ...bookObject, // Avec le contenu géré en début de code
+                userId: req.auth.userId, // Auquel on ajoute un nouveau userId (qui viens de auth)
+                ratings, // Ainsi qu'une note 
+                averageRating: rating, // Qu'on initialise en tant que moyenne de note
+                imageUrl: `${req.protocol}://${req.get('host')}/images/${filename}` // Et on lui ajoute une image qu'on a compressé en webp.
             });
-            book.save()
+            book.save() // ON enregistre le livre.
                 .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
                 .catch(error => res.status(400).json({ error }));
         })
@@ -61,12 +61,12 @@ exports.createBook = (req, res, next) => {
 };
 
 exports.modifyBook = (req, res, next) => {
-    const bookObject = req.file ? {
-        ...JSON.parse(req.body.book),
-        imageUrl: '' // sera défini après compression
-    } : { ...req.body };
+    const bookObject = req.file ? { // Est-ce qu'il y a une image:
+        ...JSON.parse(req.body.book), // Si oui on récupère le contenu Json de l'objet livre
+        imageUrl: '' // Et on prévoie de modifier l'imageUrl après compression (ce champ doit exister maintenant pour pouvoir y ajouter une valeur plus tard)
+    } : { ...req.body }; // Sinon on récupère juste les données de l'objet livre
 
-    delete bookObject._userId;
+    delete bookObject._userId; // On supprime le userId qui sera remplacé par un userId provenant de l'auth
 
     Book.findOne({ _id: req.params.id })
         .then((book) => {
@@ -84,20 +84,20 @@ exports.modifyBook = (req, res, next) => {
                     .webp({ quality: 100 })
                     .toFile(outputPath)
                     .then(() => {
-                        // On définit l'URL comppressée
+                        // On définit l'URL compressée
                         bookObject.imageUrl = `${req.protocol}://${req.get('host')}/images/${filename}`;
                         // On supprime l'image non compressée
                         fs.unlink(inputPath, (err) => {
                             if (err) console.warn('Suppression ancienne image échouée : ', err.message);
                         });
-                        //On supprime l'ancienne image
+                        //On supprime l'ancienne image (l'image associée au livre lors de la création)
                         const oldFilename = book.imageUrl?.split('/images/')[1];
                         if (oldFilename) {
                             fs.unlink(path.join('images', oldFilename), (err) => {
                                 if (err) console.warn('Suppression ancienne image échouée : ', err.message);
                             });
                         }
-                        Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
+                        Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id }) // ON met à jour le livre avec les nouvelles données.
                             .then(() => res.status(200).json({ message: 'Livre modifié avec image compressée !' }))
                             .catch(error => res.status(400).json({ error }));
                     })

@@ -2,18 +2,18 @@ const http = require('http');
 const app = require('./app');
 
 const normalizePort = val => {
-    const port = parseInt(val, 10);
+    const port = parseInt(val, 10); // On essaie de convertir en nombre
 
-    if (isNaN(port)) {
-        return val;
+    if (isNaN(port)) { // Si ce n’est pas un nombre (ex: une chaîne nommée comme un pipe)
+        return val; // On retourne la valeur telle quelle
     }
-    if (port >= 0) {
+    if (port >= 0) { // Si c’est un numéro de port valide
         return port;
     }
-    return false;
+    return false; // Sinon, on retourne false pour indiquer une erreur
 };
-const port = normalizePort(process.env.PORT || 4000); //4000 remplace 3000 car la requête du frontend se fait sur le port 4000.
-app.set('port', port);
+const port = normalizePort(process.env.PORT || 4000); //4000 remplace 3000 car la requête du frontend se fait sur le port 3000.
+app.set('port', port); // ON informe express du port choisi
 
 const errorHandler = error => {
     if (error.syscall !== 'listen') {
