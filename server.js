@@ -16,32 +16,32 @@ const port = normalizePort(process.env.PORT || 4000); //4000 remplace 3000 car l
 app.set('port', port); // ON informe express du port choisi
 
 const errorHandler = error => {
-    if (error.syscall !== 'listen') {
+    if (error.syscall !== 'listen') { // Si l'erreur ne concerne pas l'écoute du port, on la relance
         throw error;
     }
-    const address = server.address();
-    const bind = typeof address === 'string' ? 'pipe' + address : 'port' + port;
-    switch (error.code) {
-        case 'EACCES':
+    const address = server.address(); // On récupère l'adresse deu serveur
+    const bind = typeof address === 'string' ? 'pipe' + address : 'port' + port; // On détermine le type: pipe ou port
+    switch (error.code) { // On gère les erreurs connues
+        case 'EACCES': // Pas les permissions nécessaires
             console.error(bind + ' requires elevated privileges.');
-            process.exit(1);
+            process.exit(1); //On arrête le serveur avec une erreur
             break;
-        case 'EADDRINUSE':
+        case 'EADDRINUSE': // Le port est déjà utilisé
             console.error(bind + ' is already in use.');
-            process.exit(1);
+            process.exit(1); // On arrête aussi avec une erreur
             break;
-        default:
+        default: // Toute autre erreur est relancée
             throw error;
     }
 };
 
-const server = http.createServer(app);
+const server = http.createServer(app); // On créé le serveur en lui passant l'app Express
 
-server.on('error', errorHandler);
-server.on('listening', () => {
+server.on('error', errorHandler); // On attache notre gestionnaire d'erreur au serveur
+server.on('listening', () => { // Quand le serveur démarre, on affiche une info dans la console
     const address = server.address();
     const bind = typeof address === 'string' ? 'pipe' + address : 'port' + port;
     console.log('Listening on ' + bind);
 });
 
-server.listen(port);
+server.listen(port); // On dit au serveur de commencer à écouter sur le port choisi
