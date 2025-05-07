@@ -16,7 +16,7 @@ mongoose.connect('mongodb+srv://ViniPoy:Devastator1990!@cluster0.wryjhkn.mongodb
 app.use(express.json()); // Middleware pour parser automatiquement les requêtes JSON entrantes
 // Middleware pour gérer le CORS (Cross Origin Resource Sharing)
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Autorise tout lees domaines à acceder a l'API
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Autorise tout les domaines à acceder a l'API
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization'); // Autorise ces headers
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS'); // Autorise ces méthodes http
     next();

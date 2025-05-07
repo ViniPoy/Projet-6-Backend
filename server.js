@@ -12,8 +12,9 @@ const normalizePort = val => {
     }
     return false; // Sinon, on retourne false pour indiquer une erreur
 };
+
 const port = normalizePort(process.env.PORT || 4000); //4000 remplace 3000 car la requête du frontend se fait sur le port 3000.
-app.set('port', port); // ON informe express du port choisi
+app.set('port', port); // On informe express du port choisi
 
 const errorHandler = error => {
     if (error.syscall !== 'listen') { // Si l'erreur ne concerne pas l'écoute du port, on la relance
